@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "defaults": {
+    "min_delay_ms": 5000,
+    "page_timeout_ms": 30000,
+    "max_urls_per_run": 10
+  },
+  "sources": []
+}

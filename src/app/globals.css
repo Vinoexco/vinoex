@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  --espresso: #1a1410;
+  --cream: #f5f1eb;
+  --gold: #c4a96a;
+  --bid: #2d5a3d;
+  --ask: #7a2020;
+  --espresso-light: #2a221c;
+  --espresso-mid: #3d3229;
+  --gold-dim: #9a8455;
+}
+
+@theme inline {
+  --color-espresso: var(--espresso);
+  --color-cream: var(--cream);
+  --color-gold: var(--gold);
+  --color-bid: var(--bid);
+  --color-ask: var(--ask);
+  --font-sans: var(--font-lato);
+  --font-serif: var(--font-cormorant);
+}
+
+body {
+  background: var(--espresso);
+  color: var(--cream);
+  font-family: var(--font-lato), system-ui, sans-serif;
+}
+
+.font-wine {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-style: italic;
+}
