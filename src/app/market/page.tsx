@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { EARLY_PREVIEW_MARKET_NOTE, formatMarketValue } from "@/lib/format-currency";
 
@@ -126,13 +127,22 @@ export default function MarketPage() {
       <header className="border-b border-[#c4a96a]/20 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <h1 className="font-wine text-3xl tracking-wide text-[#c4a96a]">
+            <Link
+              href="/"
+              className="font-wine text-3xl tracking-wide text-[#c4a96a] transition-colors hover:text-[#f5f1eb]"
+            >
               Vinoex
-            </h1>
+            </Link>
             <div className="hidden h-5 w-px bg-[#c4a96a]/30 sm:block" />
             <span className="hidden text-xs uppercase tracking-[0.25em] text-[#f5f1eb]/50 sm:block">
               Fine Wine &amp; Spirits Exchange
             </span>
+            <Link
+              href="/"
+              className="text-xs uppercase tracking-[0.2em] text-[#f5f1eb]/40 transition-colors hover:text-[#c4a96a]"
+            >
+              ← Home
+            </Link>
           </div>
           <div className="flex items-center gap-6 text-xs">
             <div className="flex items-center gap-2">
