@@ -2,6 +2,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import HeroMarketPanel from "@/components/HeroMarketPanel";
 import MarketPreview from "@/components/MarketPreview";
+import WaitlistForm from "@/components/WaitlistForm";
 
 const WHY_WINE = [
   {
@@ -66,12 +67,12 @@ export default function HomePage() {
               >
                 Explore Market
               </Link>
-              <button
-                type="button"
+              <a
+                href="#waitlist"
                 className="inline-flex h-12 items-center justify-center border border-[#c4a96a]/40 px-8 text-xs uppercase tracking-[0.2em] text-[#c4a96a] transition-colors hover:border-[#c4a96a] hover:bg-[#c4a96a]/5"
               >
                 Join Waitlist
-              </button>
+              </a>
             </div>
           </div>
 
@@ -204,19 +205,34 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="mt-16 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <div className="mt-16 flex justify-center">
             <Link
               href="/market"
               className="inline-flex h-12 items-center justify-center bg-[#c4a96a] px-8 text-xs uppercase tracking-[0.2em] text-[#1a1410] transition-colors hover:bg-[#d4bc82]"
             >
               Explore Market
             </Link>
-            <button
-              type="button"
-              className="inline-flex h-12 items-center justify-center border border-[#c4a96a]/40 px-8 text-xs uppercase tracking-[0.2em] text-[#c4a96a] transition-colors hover:border-[#c4a96a] hover:bg-[#c4a96a]/5"
-            >
-              Join Waitlist
-            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="waitlist"
+        className="scroll-mt-24 border-t border-[#c4a96a]/10 bg-[#1f1915]/40 py-20 sm:py-28"
+      >
+        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+          <div className="mx-auto max-w-xl text-center">
+            <h2 className="text-xs uppercase tracking-[0.3em] text-[#c4a96a]">Early Access</h2>
+            <p className="font-wine mt-3 text-3xl text-[#f5f1eb] sm:text-4xl">
+              Join the waitlist
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-[#f5f1eb]/55">
+              Be first to access live market data, portfolio tools, and allocation
+              workflows when Vinoex opens to early members.
+            </p>
+          </div>
+          <div className="mt-10">
+            <WaitlistForm />
           </div>
         </div>
       </section>
