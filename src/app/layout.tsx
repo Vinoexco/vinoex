@@ -17,7 +17,7 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: "Vinoex — Invest In Wine",
-  description: "Track fine wine prices, monitor market movement, and build a portfolio around one of the world's most overlooked asset classes.",
+  description: "Track estimated market values, monitor market movement, and build a portfolio around one of the world's most overlooked asset classes.",
 };
 
 export default function RootLayout({

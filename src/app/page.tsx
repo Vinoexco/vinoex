@@ -3,6 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import HeroMarketPanel from "@/components/HeroMarketPanel";
 import MarketPreview from "@/components/MarketPreview";
 import WaitlistForm from "@/components/WaitlistForm";
+import { EARLY_PREVIEW_MARKET_NOTE } from "@/lib/format-currency";
 
 const WHY_WINE = [
   {
@@ -20,14 +21,14 @@ const WHY_WINE = [
 ];
 
 const PORTFOLIO_FEATURES = [
-  { label: "Total Value", value: "$1.24M", sub: "+8.3% YTD" },
+  { label: "Total Value", value: "£1.24M", sub: "+8.3% YTD" },
   { label: "Holdings", value: "47 Lots", sub: "12 regions" },
   { label: "Avg. Holding", value: "4.2 yrs", sub: "Long-term" },
-  { label: "Unrealised Gain", value: "+$186K", sub: "Since inception" },
+  { label: "Unrealised Gain", value: "+£186K", sub: "Since inception" },
 ];
 
 const STEPS = [
-  { step: "01", title: "Discover", body: "Browse live order books across Bordeaux, Burgundy, Napa, and spirits — with institutional-grade pricing data." },
+  { step: "01", title: "Discover", body: "Browse live order books across Bordeaux, Burgundy, Napa, and spirits — with institutional-grade estimated market value data." },
   { step: "02", title: "Analyse", body: "Track vintage performance, monitor spreads, and build watchlists around producers that match your thesis." },
   { step: "03", title: "Allocate", body: "Construct a diversified cellar portfolio with the same rigour you apply to any alternative asset class." },
   { step: "04", title: "Monitor", body: "Receive real-time valuations, trade alerts, and portfolio intelligence as markets move." },
@@ -57,7 +58,7 @@ export default function HomePage() {
               Alternative assets made accessible.
             </p>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-[#f5f1eb]/60 sm:text-lg">
-              Track fine wine prices, monitor market movement, and build a portfolio
+              Track estimated market values, monitor market movement, and build a portfolio
               around one of the world&apos;s most overlooked asset classes.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -118,7 +119,7 @@ export default function HomePage() {
             <div>
               <h2 className="text-xs uppercase tracking-[0.3em] text-[#c4a96a]">Live Market Preview</h2>
               <p className="font-wine mt-3 text-3xl text-[#f5f1eb] sm:text-4xl">
-                Real-time pricing, auction-house depth
+                Estimated market values, auction-house depth
               </p>
             </div>
             <p className="max-w-sm text-sm text-[#f5f1eb]/50">
@@ -156,6 +157,7 @@ export default function HomePage() {
 
             <div className="rounded border border-[#c4a96a]/20 bg-[#1f1915] p-6 sm:p-8">
               <p className="text-[10px] uppercase tracking-[0.2em] text-[#f5f1eb]/35">Sample Portfolio</p>
+              <p className="mt-1 text-[10px] text-[#f5f1eb]/30">{EARLY_PREVIEW_MARKET_NOTE}</p>
               <div className="mt-6 grid grid-cols-2 gap-4">
                 {PORTFOLIO_FEATURES.map((feat) => (
                   <div key={feat.label} className="border border-[#c4a96a]/10 bg-[#1a1410] p-4">
@@ -167,9 +169,9 @@ export default function HomePage() {
               </div>
               <div className="mt-6 space-y-3 border-t border-[#c4a96a]/10 pt-6">
                 {[
-                  { name: "Château Pétrus 2010", pct: "18%", value: "$84,000" },
-                  { name: "DRC Romanée-Conti 2019", pct: "14%", value: "$65,200" },
-                  { name: "Screaming Eagle 2016", pct: "9%", value: "$41,800" },
+                  { name: "Château Pétrus 2010", pct: "18%", value: "£84,000" },
+                  { name: "DRC Romanée-Conti 2019", pct: "14%", value: "£65,200" },
+                  { name: "Screaming Eagle 2016", pct: "9%", value: "£41,800" },
                 ].map((holding) => (
                   <div key={holding.name} className="flex items-center justify-between text-sm">
                     <span className="font-wine text-[#f5f1eb]/80">{holding.name}</span>

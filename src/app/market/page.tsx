@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { EARLY_PREVIEW_MARKET_NOTE, formatMarketValue } from "@/lib/format-currency";
 
 type OrderRow = {
   id: string;
@@ -38,10 +39,6 @@ const INITIAL_ORDERS: OrderRow[] = [
   { id: "11", producer: "Château Margaux", vintage: 2015, format: "12×750ml", bid: 9800, ask: 10200, lastTrade: 10000, change: -0.6 },
   { id: "12", producer: "Sassicaia", vintage: 2016, format: "6×750ml", bid: 3400, ask: 3700, lastTrade: 3550, change: 1.4 },
 ];
-
-function formatPrice(n: number) {
-  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-}
 
 function formatChange(n: number) {
   const sign = n > 0 ? "+" : "";
@@ -153,7 +150,7 @@ export default function MarketPage() {
       <div className="grid grid-cols-2 gap-px border-b border-[#c4a96a]/10 bg-[#c4a96a]/10 sm:grid-cols-4">
         {[
           { label: "Active Lots", value: orders.length.toString() },
-          { label: "Session Volume", value: formatPrice(totalVolume) },
+          { label: "Session Volume", value: formatMarketValue(totalVolume) },
           { label: "Avg Spread", value: "3.2%" },
           { label: "Trades Today", value: "847" },
         ].map((stat) => (
@@ -170,6 +167,7 @@ export default function MarketPage() {
             <div>
               <h2 className="text-xs uppercase tracking-[0.3em] text-[#c4a96a]">Order Book</h2>
               <p className="mt-1 text-sm text-[#f5f1eb]/50">Live bids &amp; asks across primary markets</p>
+              <p className="mt-1 text-[10px] text-[#f5f1eb]/35">{EARLY_PREVIEW_MARKET_NOTE}</p>
             </div>
             <div className="flex gap-3 text-[10px] uppercase tracking-widest">
               <span className="flex items-center gap-1.5 text-[#2d5a3d]">
@@ -215,13 +213,13 @@ export default function MarketPage() {
                       </td>
                       <td className="px-3 py-3 text-center font-mono text-[#c4a96a]">{row.vintage}</td>
                       <td className="px-3 py-3 text-center text-xs text-[#f5f1eb]/60">{row.format}</td>
-                      <td className="px-3 py-3 text-right font-mono text-[#2d5a3d]">{formatPrice(row.bid)}</td>
-                      <td className="px-3 py-3 text-right font-mono text-[#7a2020]">{formatPrice(row.ask)}</td>
+                      <td className="px-3 py-3 text-right font-mono text-[#2d5a3d]">{formatMarketValue(row.bid)}</td>
+                      <td className="px-3 py-3 text-right font-mono text-[#7a2020]">{formatMarketValue(row.ask)}</td>
                       <td className="px-3 py-3 text-right font-mono text-xs text-[#f5f1eb]/50">
-                        {formatPrice(spread)}
+                        {formatMarketValue(spread)}
                         <span className="ml-1 text-[#f5f1eb]/30">({spreadPct}%)</span>
                       </td>
-                      <td className="px-3 py-3 text-right font-mono text-[#f5f1eb]">{formatPrice(row.lastTrade)}</td>
+                      <td className="px-3 py-3 text-right font-mono text-[#f5f1eb]">{formatMarketValue(row.lastTrade)}</td>
                       <td className={`px-4 py-3 text-right font-mono text-xs ${
                         isUp ? "text-[#2d5a3d]" : isDown ? "text-[#7a2020]" : "text-[#f5f1eb]/40"
                       }`}>
@@ -239,6 +237,7 @@ export default function MarketPage() {
           <div className="border-b border-[#c4a96a]/15 px-4 py-4">
             <h2 className="text-xs uppercase tracking-[0.3em] text-[#c4a96a]">Trade Tape</h2>
             <p className="mt-1 text-[10px] text-[#f5f1eb]/40">Recent executions</p>
+            <p className="mt-1 text-[10px] text-[#f5f1eb]/30">{EARLY_PREVIEW_MARKET_NOTE}</p>
           </div>
 
           <div className="overflow-auto lg:max-h-[calc(100vh-200px)]">
@@ -273,7 +272,7 @@ export default function MarketPage() {
                       trade.side === "bid" ? "text-[#2d5a3d]" : "text-[#7a2020]"
                     }`}
                   >
-                    {formatPrice(trade.price)}
+                    {formatMarketValue(trade.price)}
                   </span>
                 </div>
               </div>

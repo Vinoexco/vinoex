@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { EARLY_PREVIEW_MARKET_NOTE, formatMarketValue } from "@/lib/format-currency";
 
 const PREVIEW_ROWS = [
   { producer: "Domaine de la Romanée-Conti", vintage: 2019, bid: 24800, ask: 25400, change: 1.2 },
@@ -9,10 +10,6 @@ const PREVIEW_ROWS = [
   { producer: "Screaming Eagle", vintage: 2016, bid: 8950, ask: 9400, change: 2.1 },
   { producer: "Château Lafite Rothschild", vintage: 2009, bid: 18600, ask: 19200, change: 0.8 },
 ];
-
-function formatPrice(n: number) {
-  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-}
 
 export default function MarketPreview() {
   const [rows, setRows] = useState(PREVIEW_ROWS);
@@ -51,6 +48,10 @@ export default function MarketPreview() {
         <span className="font-mono text-[10px] text-[#c4a96a]/60">LIVE · SIMULATED</span>
       </div>
 
+      <p className="border-b border-[#c4a96a]/10 px-4 py-2 text-[10px] text-[#f5f1eb]/40 sm:px-6">
+        {EARLY_PREVIEW_MARKET_NOTE}
+      </p>
+
       <div className="overflow-x-auto">
         <table className="w-full min-w-[480px] text-sm">
           <thead>
@@ -72,8 +73,8 @@ export default function MarketPreview() {
                     <span className="font-wine text-sm text-[#f5f1eb]">{row.producer}</span>
                   </td>
                   <td className="px-3 py-3 text-center font-mono text-xs text-[#c4a96a]">{row.vintage}</td>
-                  <td className="px-3 py-3 text-right font-mono text-xs text-[#2d5a3d]">{formatPrice(row.bid)}</td>
-                  <td className="px-3 py-3 text-right font-mono text-xs text-[#7a2020]">{formatPrice(row.ask)}</td>
+                  <td className="px-3 py-3 text-right font-mono text-xs text-[#2d5a3d]">{formatMarketValue(row.bid)}</td>
+                  <td className="px-3 py-3 text-right font-mono text-xs text-[#7a2020]">{formatMarketValue(row.ask)}</td>
                   <td className={`px-4 py-3 text-right font-mono text-xs sm:px-6 ${
                     isUp ? "text-[#2d5a3d]" : isDown ? "text-[#7a2020]" : "text-[#f5f1eb]/40"
                   }`}>
