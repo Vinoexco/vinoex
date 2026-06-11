@@ -4,12 +4,16 @@
   "private": true,
   "scripts": {
     "start": "tsx src/index.ts",
+    "ingest:manual": "tsx src/manual-ingest/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
+    "pg": "^8.13.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/pg": "^8.11.11",
     "@types/node": "^20",
     "tsx": "^4.19.3",
     "typescript": "^5"

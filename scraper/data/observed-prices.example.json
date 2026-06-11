@@ -1,0 +1,38 @@
+{
+  "observations": [
+    {
+      "source_name": "Berry Bros & Rudd",
+      "source_url": "https://www.bbr.com/wine-broking/chateau-lafite-rothschild-2018",
+      "raw_title": "Château Lafite Rothschild 2018",
+      "producer": "Château Lafite Rothschild",
+      "vintage": 2018,
+      "format_label": "750ml",
+      "price": 6750,
+      "currency": "GBP",
+      "observed_at": "2026-06-10T12:00:00.000Z",
+      "slug": "chateau-lafite-rothschild-2018-750ml"
+    },
+    {
+      "source_name": "Corney & Barrow",
+      "source_url": "https://www.corneyandbarrow.com/wine/chateau-latour-2016",
+      "raw_title": "Château Latour 2016",
+      "producer": "Château Latour",
+      "vintage": 2016,
+      "format_label": "750ml",
+      "price": 8400,
+      "currency": "GBP",
+      "observed_at": "2026-06-10T15:30:00.000Z"
+    },
+    {
+      "source_name": "Farr Vintners",
+      "source_url": "https://www.farrvintners.com/lots/dom-perignon-2013",
+      "raw_title": "Dom Pérignon 2013 (6x75cl)",
+      "producer": "Dom Pérignon",
+      "vintage": 2013,
+      "format_label": "750ml",
+      "price": 1425,
+      "currency": "GBP",
+      "observed_at": "2026-06-11T09:00:00.000Z"
+    }
+  ]
+}
