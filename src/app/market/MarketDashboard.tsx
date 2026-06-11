@@ -21,6 +21,8 @@ type WineRow = {
   producer: string;
   vintage: number;
   format: string;
+  region: string | null;
+  category: string | null;
   estimatedValue: number;
   sourceCount: number;
   lastUpdated: string;
@@ -46,6 +48,8 @@ function lotToRow({ wine, estimate }: MarketLot): WineRow {
     producer: wine.canonical_producer,
     vintage: wine.vintage,
     format: wine.format_label,
+    region: wine.region,
+    category: wine.category,
     estimatedValue: estimate
       ? Number(estimate.estimated_value_gbp)
       : estimatedMarketValueGbp(wine.slug),
@@ -75,7 +79,15 @@ function matchesSourceCountRange(count: number, range: SourceCountRange): boolea
 function rowMatchesSearch(row: WineRow, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  const haystack = [row.producer, String(row.vintage), row.format, row.slug]
+  const haystack = [
+    row.producer,
+    String(row.vintage),
+    row.format,
+    row.slug,
+    row.region,
+    row.category,
+  ]
+    .filter(Boolean)
     .join(" ")
     .toLowerCase();
   return haystack.includes(q);
@@ -155,6 +167,8 @@ type MarketDashboardProps = {
 export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
   const rows = useMemo(() => lots.map(lotToRow), [lots]);
   const [search, setSearch] = useState("");
+  const [regionFilter, setRegionFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [vintageFilter, setVintageFilter] = useState("all");
   const [formatFilter, setFormatFilter] = useState("all");
   const [sourceCountFilter, setSourceCountFilter] = useState<SourceCountRange>("all");
@@ -167,6 +181,20 @@ export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
     () => [...new Set(rows.map((row) => row.vintage))].sort((a, b) => b - a),
     [rows]
   );
+  const regionOptions = useMemo(
+    () =>
+      [...new Set(rows.map((row) => row.region).filter(Boolean) as string[])].sort((a, b) =>
+        a.localeCompare(b)
+      ),
+    [rows]
+  );
+  const categoryOptions = useMemo(
+    () =>
+      [...new Set(rows.map((row) => row.category).filter(Boolean) as string[])].sort((a, b) =>
+        a.localeCompare(b)
+      ),
+    [rows]
+  );
   const formatOptions = useMemo(
     () => [...new Set(rows.map((row) => row.format))].sort((a, b) => a.localeCompare(b)),
     [rows]
@@ -177,15 +205,19 @@ export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
     const filtered = rows.filter(
       (row) =>
         rowMatchesSearch(row, search) &&
+        (regionFilter === "all" || row.region === regionFilter) &&
+        (categoryFilter === "all" || row.category === categoryFilter) &&
         (vintageFilter === "all" || String(row.vintage) === vintageFilter) &&
         (formatFilter === "all" || row.format === formatFilter) &&
         matchesSourceCountRange(row.sourceCount, sourceCountFilter)
     );
     return sortRows(filtered, sort);
-  }, [rows, search, vintageFilter, formatFilter, sourceCountFilter, sort]);
+  }, [rows, search, regionFilter, categoryFilter, vintageFilter, formatFilter, sourceCountFilter, sort]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
+    regionFilter !== "all" ||
+    categoryFilter !== "all" ||
     vintageFilter !== "all" ||
     formatFilter !== "all" ||
     sourceCountFilter !== "all" ||
@@ -193,6 +225,8 @@ export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
 
   function resetFilters() {
     setSearch("");
+    setRegionFilter("all");
+    setCategoryFilter("all");
     setVintageFilter("all");
     setFormatFilter("all");
     setSourceCountFilter("all");
@@ -307,7 +341,7 @@ export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
                   type="search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search producer, vintage, format, slug…"
+                  placeholder="Search producer, vintage, format, region…"
                   className={`${controlClassName} min-w-0 flex-1`}
                 />
                 <button
@@ -321,6 +355,42 @@ export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-[#f5f1eb]/40">
+                    Region
+                  </span>
+                  <select
+                    value={regionFilter}
+                    onChange={(e) => setRegionFilter(e.target.value)}
+                    className={controlClassName}
+                  >
+                    <option value="all">All regions</option>
+                    {regionOptions.map((region) => (
+                      <option key={region} value={region}>
+                        {region}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-[#f5f1eb]/40">
+                    Category
+                  </span>
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className={controlClassName}
+                  >
+                    <option value="all">All categories</option>
+                    {categoryOptions.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
                 <label className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase tracking-[0.15em] text-[#f5f1eb]/40">
                     Vintage

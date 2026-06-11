@@ -6,6 +6,10 @@ export type Wine = {
   format_ml: number;
   pack_size: number;
   format_label: string;
+  region: string | null;
+  country: string | null;
+  category: string | null;
+  asset_type: string | null;
   created_at: string;
 };
 
