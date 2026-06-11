@@ -9,6 +9,21 @@ export type Wine = {
   created_at: string;
 };
 
+export type EstimatedValue = {
+  id: string;
+  wine_id: string;
+  estimated_value_gbp: number;
+  source_count: number;
+  last_updated: string;
+  as_of_date: string;
+  computed_at: string;
+};
+
+export type MarketLot = {
+  wine: Wine;
+  estimate: EstimatedValue | null;
+};
+
 export type WaitlistSignup = {
   id: string;
   email: string;
@@ -27,6 +42,15 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Wine>;
+        Relationships: [];
+      };
+      estimated_values: {
+        Row: EstimatedValue;
+        Insert: Omit<EstimatedValue, "id" | "computed_at"> & {
+          id?: string;
+          computed_at?: string;
+        };
+        Update: Partial<EstimatedValue>;
         Relationships: [];
       };
       waitlist_signups: {

@@ -26,3 +26,12 @@ export function placeholderLastUpdated(slug: string): string {
   if (daysAgo === 1) return "1d ago";
   return `${daysAgo}d ago`;
 }
+
+/** Relative label for a stored estimated_values.last_updated timestamp. */
+export function formatEstimatedLastUpdated(iso: string): string {
+  const date = new Date(iso);
+  const daysAgo = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (daysAgo <= 0) return "Today";
+  if (daysAgo === 1) return "1d ago";
+  return `${daysAgo}d ago`;
+}

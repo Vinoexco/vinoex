@@ -8,10 +8,11 @@ import {
 } from "@/lib/format-currency";
 import {
   estimatedMarketValueGbp,
+  formatEstimatedLastUpdated,
   placeholderLastUpdated,
   placeholderSourceCount,
 } from "@/lib/market-estimate";
-import type { Wine } from "@/types/database";
+import type { MarketLot } from "@/types/database";
 
 type WineRow = {
   id: string;
@@ -35,16 +36,20 @@ type Trade = {
   qty: number;
 };
 
-function wineToRow(wine: Wine): WineRow {
+function lotToRow({ wine, estimate }: MarketLot): WineRow {
   return {
     id: wine.id,
     slug: wine.slug,
     producer: wine.canonical_producer,
     vintage: wine.vintage,
     format: wine.format_label,
-    estimatedValue: estimatedMarketValueGbp(wine.slug),
-    sourceCount: placeholderSourceCount(wine.slug),
-    lastUpdated: placeholderLastUpdated(wine.slug),
+    estimatedValue: estimate
+      ? Number(estimate.estimated_value_gbp)
+      : estimatedMarketValueGbp(wine.slug),
+    sourceCount: estimate ? estimate.source_count : placeholderSourceCount(wine.slug),
+    lastUpdated: estimate
+      ? formatEstimatedLastUpdated(estimate.last_updated)
+      : placeholderLastUpdated(wine.slug),
   };
 }
 
@@ -82,7 +87,7 @@ function randomTrade(rows: WineRow[]): Trade | null {
 function initialTrades(rows: WineRow[]): Trade[] {
   return rows.slice(0, 8).map((row, i) => ({
     id: `t${i}`,
-    time: nowTime(),
+    time: "--:--:--",
     producer: row.producer,
     vintage: row.vintage,
     format: row.format,
@@ -93,20 +98,25 @@ function initialTrades(rows: WineRow[]): Trade[] {
 }
 
 type MarketDashboardProps = {
-  wines: Wine[];
+  lots: MarketLot[];
   error: string | null;
 };
 
-export default function MarketDashboard({ wines, error }: MarketDashboardProps) {
-  const rows = useMemo(() => wines.map(wineToRow), [wines]);
+export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
+  const rows = useMemo(() => lots.map(lotToRow), [lots]);
   const [trades, setTrades] = useState<Trade[]>(() => initialTrades(rows));
-  const [clock, setClock] = useState(nowTime);
+  const [clock, setClock] = useState("--:--:--");
   const [flashTradeId, setFlashTradeId] = useState<string | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setClock(nowTime());
+    const updateClock = () => setClock(nowTime());
+    updateClock();
+    const clockInterval = setInterval(updateClock, 2200);
+    return () => clearInterval(clockInterval);
+  }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
       if (rows.length === 0 || Math.random() <= 0.4) return;
 
       const trade = randomTrade(rows);
