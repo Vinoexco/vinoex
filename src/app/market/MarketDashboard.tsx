@@ -10,6 +10,7 @@ import {
   estimatedMarketValueGbp,
   formatEstimatedLastUpdated,
   placeholderLastUpdated,
+  placeholderLastUpdatedMs,
   placeholderSourceCount,
 } from "@/lib/market-estimate";
 import type { MarketLot } from "@/types/database";
@@ -23,6 +24,8 @@ type WineRow = {
   estimatedValue: number;
   sourceCount: number;
   lastUpdated: string;
+  lastUpdatedAt: number;
+  hasRealEstimate: boolean;
 };
 
 type Trade = {
@@ -50,8 +53,55 @@ function lotToRow({ wine, estimate }: MarketLot): WineRow {
     lastUpdated: estimate
       ? formatEstimatedLastUpdated(estimate.last_updated)
       : placeholderLastUpdated(wine.slug),
+    lastUpdatedAt: estimate
+      ? new Date(estimate.last_updated).getTime()
+      : placeholderLastUpdatedMs(wine.slug),
+    hasRealEstimate: estimate !== null,
   };
 }
+
+type SortOption = "value-desc" | "value-asc" | "producer" | "updated";
+type SourceCountRange = "all" | "1-3" | "4-6" | "7+";
+
+const DEFAULT_SORT: SortOption = "value-desc";
+
+function matchesSourceCountRange(count: number, range: SourceCountRange): boolean {
+  if (range === "all") return true;
+  if (range === "1-3") return count >= 1 && count <= 3;
+  if (range === "4-6") return count >= 4 && count <= 6;
+  return count >= 7;
+}
+
+function rowMatchesSearch(row: WineRow, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const haystack = [row.producer, String(row.vintage), row.format, row.slug]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(q);
+}
+
+function sortRows(rows: WineRow[], sort: SortOption): WineRow[] {
+  const sorted = [...rows];
+  switch (sort) {
+    case "value-desc":
+      sorted.sort((a, b) => b.estimatedValue - a.estimatedValue);
+      break;
+    case "value-asc":
+      sorted.sort((a, b) => a.estimatedValue - b.estimatedValue);
+      break;
+    case "producer":
+      sorted.sort((a, b) => a.producer.localeCompare(b.producer));
+      break;
+    case "updated":
+      sorted.sort((a, b) => b.lastUpdatedAt - a.lastUpdatedAt);
+      break;
+  }
+  return sorted;
+}
+
+const controlClassName =
+  "rounded border border-[#c4a96a]/20 bg-[#2a221c] px-3 py-2 text-xs text-[#f5f1eb] outline-none transition-colors focus:border-[#c4a96a]/50";
 
 function nowTime() {
   return new Date().toLocaleTimeString("en-US", {
@@ -104,9 +154,50 @@ type MarketDashboardProps = {
 
 export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
   const rows = useMemo(() => lots.map(lotToRow), [lots]);
+  const [search, setSearch] = useState("");
+  const [vintageFilter, setVintageFilter] = useState("all");
+  const [formatFilter, setFormatFilter] = useState("all");
+  const [sourceCountFilter, setSourceCountFilter] = useState<SourceCountRange>("all");
+  const [sort, setSort] = useState<SortOption>(DEFAULT_SORT);
   const [trades, setTrades] = useState<Trade[]>(() => initialTrades(rows));
   const [clock, setClock] = useState("--:--:--");
   const [flashTradeId, setFlashTradeId] = useState<string | null>(null);
+
+  const vintageOptions = useMemo(
+    () => [...new Set(rows.map((row) => row.vintage))].sort((a, b) => b - a),
+    [rows]
+  );
+  const formatOptions = useMemo(
+    () => [...new Set(rows.map((row) => row.format))].sort((a, b) => a.localeCompare(b)),
+    [rows]
+  );
+  const hasRealSourceCounts = useMemo(() => rows.some((row) => row.hasRealEstimate), [rows]);
+
+  const filteredRows = useMemo(() => {
+    const filtered = rows.filter(
+      (row) =>
+        rowMatchesSearch(row, search) &&
+        (vintageFilter === "all" || String(row.vintage) === vintageFilter) &&
+        (formatFilter === "all" || row.format === formatFilter) &&
+        matchesSourceCountRange(row.sourceCount, sourceCountFilter)
+    );
+    return sortRows(filtered, sort);
+  }, [rows, search, vintageFilter, formatFilter, sourceCountFilter, sort]);
+
+  const hasActiveFilters =
+    search.trim() !== "" ||
+    vintageFilter !== "all" ||
+    formatFilter !== "all" ||
+    sourceCountFilter !== "all" ||
+    sort !== DEFAULT_SORT;
+
+  function resetFilters() {
+    setSearch("");
+    setVintageFilter("all");
+    setFormatFilter("all");
+    setSourceCountFilter("all");
+    setSort(DEFAULT_SORT);
+  }
 
   useEffect(() => {
     const updateClock = () => setClock(nowTime());
@@ -205,6 +296,108 @@ export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
             </p>
           )}
 
+          {!error && rows.length > 0 && (
+            <div className="mb-4 space-y-3 rounded border border-[#c4a96a]/15 bg-[#1f1915] p-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <label className="sr-only" htmlFor="market-search">
+                  Search lots
+                </label>
+                <input
+                  id="market-search"
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search producer, vintage, format, slug…"
+                  className={`${controlClassName} min-w-0 flex-1`}
+                />
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  disabled={!hasActiveFilters}
+                  className="shrink-0 rounded border border-[#c4a96a]/20 px-3 py-2 text-xs uppercase tracking-[0.15em] text-[#c4a96a] transition-colors hover:border-[#c4a96a]/40 hover:bg-[#c4a96a]/5 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Reset filters
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-[#f5f1eb]/40">
+                    Vintage
+                  </span>
+                  <select
+                    value={vintageFilter}
+                    onChange={(e) => setVintageFilter(e.target.value)}
+                    className={controlClassName}
+                  >
+                    <option value="all">All vintages</option>
+                    {vintageOptions.map((vintage) => (
+                      <option key={vintage} value={String(vintage)}>
+                        {vintage}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-[#f5f1eb]/40">
+                    Format
+                  </span>
+                  <select
+                    value={formatFilter}
+                    onChange={(e) => setFormatFilter(e.target.value)}
+                    className={controlClassName}
+                  >
+                    <option value="all">All formats</option>
+                    {formatOptions.map((format) => (
+                      <option key={format} value={format}>
+                        {format}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {hasRealSourceCounts && (
+                  <label className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-[#f5f1eb]/40">
+                      Sources
+                    </span>
+                    <select
+                      value={sourceCountFilter}
+                      onChange={(e) => setSourceCountFilter(e.target.value as SourceCountRange)}
+                      className={controlClassName}
+                    >
+                      <option value="all">All ranges</option>
+                      <option value="1-3">1–3 sources</option>
+                      <option value="4-6">4–6 sources</option>
+                      <option value="7+">7+ sources</option>
+                    </select>
+                  </label>
+                )}
+
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-[#f5f1eb]/40">
+                    Sort
+                  </span>
+                  <select
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value as SortOption)}
+                    className={controlClassName}
+                  >
+                    <option value="value-desc">EMV high to low</option>
+                    <option value="value-asc">EMV low to high</option>
+                    <option value="producer">Producer A–Z</option>
+                    <option value="updated">Last updated</option>
+                  </select>
+                </label>
+              </div>
+
+              <p className="text-xs text-[#f5f1eb]/45">
+                Showing {filteredRows.length} of {rows.length} lots
+              </p>
+            </div>
+          )}
+
           <div className="overflow-x-auto rounded border border-[#c4a96a]/15">
             <table className="w-full min-w-[720px] text-sm">
               <thead>
@@ -218,27 +411,38 @@ export default function MarketDashboard({ lots, error }: MarketDashboardProps) {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, i) => (
-                  <tr
-                    key={row.id}
-                    className={`border-b border-[#c4a96a]/8 transition-colors duration-300 hover:bg-[#2a221c]/60 ${
-                      i % 2 === 0 ? "bg-[#1a1410]" : "bg-[#1f1915]"
-                    }`}
-                  >
-                    <td className="px-4 py-3">
-                      <span className="font-wine text-base text-[#f5f1eb]">{row.producer}</span>
+                {filteredRows.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-4 py-8 text-center text-sm text-[#f5f1eb]/45"
+                    >
+                      No lots match the current filters.
                     </td>
-                    <td className="px-3 py-3 text-center font-mono text-[#c4a96a]">{row.vintage}</td>
-                    <td className="px-3 py-3 text-center text-xs text-[#f5f1eb]/60">{row.format}</td>
-                    <td className="px-3 py-3 text-right font-mono text-[#f5f1eb]">
-                      {formatMarketValue(row.estimatedValue)}
-                    </td>
-                    <td className="px-3 py-3 text-center font-mono text-xs text-[#f5f1eb]/50">
-                      {row.sourceCount}
-                    </td>
-                    <td className="px-4 py-3 text-right text-xs text-[#f5f1eb]/45">{row.lastUpdated}</td>
                   </tr>
-                ))}
+                ) : (
+                  filteredRows.map((row, i) => (
+                    <tr
+                      key={row.id}
+                      className={`border-b border-[#c4a96a]/8 transition-colors duration-300 hover:bg-[#2a221c]/60 ${
+                        i % 2 === 0 ? "bg-[#1a1410]" : "bg-[#1f1915]"
+                      }`}
+                    >
+                      <td className="px-4 py-3">
+                        <span className="font-wine text-base text-[#f5f1eb]">{row.producer}</span>
+                      </td>
+                      <td className="px-3 py-3 text-center font-mono text-[#c4a96a]">{row.vintage}</td>
+                      <td className="px-3 py-3 text-center text-xs text-[#f5f1eb]/60">{row.format}</td>
+                      <td className="px-3 py-3 text-right font-mono text-[#f5f1eb]">
+                        {formatMarketValue(row.estimatedValue)}
+                      </td>
+                      <td className="px-3 py-3 text-center font-mono text-xs text-[#f5f1eb]/50">
+                        {row.sourceCount}
+                      </td>
+                      <td className="px-4 py-3 text-right text-xs text-[#f5f1eb]/45">{row.lastUpdated}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -27,6 +27,12 @@ export function placeholderLastUpdated(slug: string): string {
   return `${daysAgo}d ago`;
 }
 
+/** Placeholder last-updated timestamp for client-side sorting. */
+export function placeholderLastUpdatedMs(slug: string): number {
+  const daysAgo = hashSlug(`${slug}:updated`) % 14;
+  return Date.now() - daysAgo * 24 * 60 * 60 * 1000;
+}
+
 /** Relative label for a stored estimated_values.last_updated timestamp. */
 export function formatEstimatedLastUpdated(iso: string): string {
   const date = new Date(iso);
